@@ -15,17 +15,13 @@
 #include <linux/mm_types.h>
 #include <linux/jiffies.h>
 
+u64 start_time;
+
 static unsigned long timer_interval_ns = 10e9; // Call function every 10 seconds.
 static struct hrtimer hr_timer;
 static int exit = 0;
 
 struct task_struct *task;
-
-pgd_t *pgd;
-p4d_t *p4d;
-pmd_t *pmd;
-pud_t *pud;
-pte_t *ptep, pte;
 
 static int pid = 1;
 unsigned long RSS = 0, SWAP = 0, WSS = 0;
@@ -41,5 +37,39 @@ int ptep_test_and_clear_young(struct vm_area_struct *vma, unsigned long addr, pt
     return ret;
 }
 
+int findPte(struct task_struct *task)
+{
+    pgd_t *pgd;
+    p4d_t *p4d;
+    pmd_t *pmd;
+    pud_t *pud;
+    pte_t *ptep, pte;
+    
+    return 0;
+}
 
+static enum hrtimer_restart no_restart_callback(struct hrtimer *timer)
+{
+    exit++;
+    ktime_t currtime, interval;
+    currtime = ktime_get();
+    interval = ktime_set(0, timer_interval_ns);
+    hrtimer_forward(timer, currtime, interval);
+    findPte(task);
+    printk("%d", exit);
+    return HRTIMER_RESTART;
+}
 
+int memory_manager_init(void)
+{
+    return 0;
+}
+
+void memory_manager_exit(void)
+{
+    
+}
+
+module_init(memory_manager_init);
+module_exit(memory_manager_exit);
+MODULE_LICENSE("GPL");
