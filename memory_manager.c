@@ -62,12 +62,17 @@ static enum hrtimer_restart no_restart_callback(struct hrtimer *timer)
 
 int memory_manager_init(void)
 {
+    ktime_t ktime;
+    ktime = ktime_set(0, timer_interval_ns);
+    hrtimer_init(&hr_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+    hr_timer.function = &no_restart_callback;
+    hrtimer_start(&hr_timer, ktime, HRTIMER_MODE_REL);
     return 0;
 }
 
 void memory_manager_exit(void)
 {
-    
+    int ret = hrtimer_cancel(&hr_timer);
 }
 
 module_init(memory_manager_init);
