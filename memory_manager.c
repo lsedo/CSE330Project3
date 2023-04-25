@@ -6,10 +6,11 @@
 #include <linux/timekeeping.h>
 #include <linux/kthread.h>
 #include <linux/mm.h>
-#include <linux/sched/mm.h>
 #include <linux/module.h>
 #include <linux/moduleparam.h>
 #include <linux/sched.h>
+#include <linux/sched/mm.h>
+#include <linux/sched/signal.h>
 #include <linux/page.h>
 #include <linux/types.h>
 #include <linux/mm_types.h>
