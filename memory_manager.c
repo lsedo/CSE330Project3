@@ -40,11 +40,24 @@ int ptep_test_and_clear_young(struct vm_area_struct *vma, unsigned long addr, pt
 
 int findPte(struct task_struct *task)
 {
+    struct vm_area_struct *vma;
+    unsigned long size, address;
     pgd_t *pgd;
     p4d_t *p4d;
     pmd_t *pmd;
     pud_t *pud;
     pte_t *ptep, pte;
+    
+    for_each_process(task)
+    {
+        if (task->pid == pid && task != NULL) 
+        {
+            vma = task->mm->mmap;
+            address = vma->vm_start;
+            
+            
+        }
+    }
     
     return 0;
 }
