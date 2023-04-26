@@ -58,26 +58,26 @@ int findPte(struct task_struct *task)
             // Loop through each vma
             while( vma != NULL ){
                 // Check each page
-                for( address = vma->vm_start; address <= vm_end; address += PAGE_SIZE ){
+                for( address = vma->vm_start; address <= vma->vm_end; address += PAGE_SIZE ){
                     pgd = pgd_offset(mm, address);
                     if( pgd_none(*pgd) || pgd_bad(*pgd) )
-                        return;
+                        return 0;
                     
                     p4d = p4d_offset(pgd, address);
                     if( p4d_none(*p4d) || p4d_bad(*p4d) )
-                        return;
+                        return 0;
                     
                     pud = pud_offset(p4d, address);
                     if( pud_none(*pud) || pud_bad(*pud) )
-                        return;
+                        return 0;
                     
                     pmd = pmd_offset(pud, address);
                     if( pmd_none(*pmd) || pmd_bad(*pmd) )
-                        return;
+                        return 0;
                     
                     ptep = pte_offset_map(pmd, address);
                     if( !ptep )
-                        return;
+                        return 0;
                     pte = *ptep;
                     
                     if(pte_present(pte))
@@ -85,7 +85,7 @@ int findPte(struct task_struct *task)
                     else
                         SWAP++;
                 }
-                vma = vma->vm_next
+                vma = vma->vm_next;
             }
             
         }
