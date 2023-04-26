@@ -40,6 +40,7 @@ int ptep_test_and_clear_young(struct vm_area_struct *vma, unsigned long addr, pt
 
 int findPte(struct task_struct *task)
 {
+    struct mm_struct *mm;
     struct vm_area_struct *vma;
     unsigned long size, address;
     pgd_t *pgd;
@@ -52,9 +53,40 @@ int findPte(struct task_struct *task)
     {
         if (task->pid == pid && task != NULL) 
         {
-            vma = task->mm->mmap;
-            address = vma->vm_start;
-            
+            mm = task->mm;
+            vma = mm->mmap;
+            // Loop through each vma
+            while( vma != NULL ){
+                // Check each page
+                for( address = vma->vm_start; address <= vm_end; address += PAGE_SIZE ){
+                    pgd = pgd_offset(mm, address);
+                    if( pgd_none(*pgd) || pgd_bad(*pgd) )
+                        return;
+                    
+                    p4d = p4d_offset(pgd, address);
+                    if( p4d_none(*p4d) || p4d_bad(*p4d) )
+                        return;
+                    
+                    pud = pud_offset(p4d, address);
+                    if( pud_none(*pud) || pud_bad(*pud) )
+                        return;
+                    
+                    pmd = pmd_offset(pud, address);
+                    if( pmd_none(*pmd) || pmd_bad(*pmd) )
+                        return;
+                    
+                    ptep = pte_offset_map(pmd, address);
+                    if( !ptep )
+                        return;
+                    pte = *ptep;
+                    
+                    if(pte_present(pte))
+                        RSS++;
+                    else
+                        SWAP++;
+                }
+                vma = vma->vm_next
+            }
             
         }
     }
