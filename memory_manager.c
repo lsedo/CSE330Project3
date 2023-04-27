@@ -28,7 +28,7 @@ static int pid = 1;
 int RSS = 0, SWAP = 0, WSS = 0;
 
 // Module parameter
-module_param(pid, int, S_IRUSR); 
+module_param(pid, int, 0); 
 
 int ptep_test_and_clear_young(struct vm_area_struct *vma, unsigned long addr, pte_t *ptep)
 {
