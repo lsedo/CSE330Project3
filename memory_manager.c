@@ -1,20 +1,20 @@
-#include <linux/init.h>
-#include <linux/slab.h>
+//#include <linux/init.h>
+//#include <linux/slab.h>
 #include <linux/kernel.h>
 #include <linux/hrtimer.h>
 #include <linux/ktime.h>
-#include <linux/timekeeping.h>
-#include <linux/kthread.h>
+//#include <linux/timekeeping.h>
+//#include <linux/kthread.h>
 #include <linux/mm.h>
 #include <linux/module.h>
-#include <linux/moduleparam.h>
-#include <linux/sched.h>
+//#include <linux/moduleparam.h>
+//#include <linux/sched.h>
 #include <linux/sched/mm.h>
-#include <linux/sched/signal.h>
-#include <linux/page.h>
-#include <linux/types.h>
-#include <linux/mm_types.h>
-#include <linux/jiffies.h>
+//#include <linux/sched/signal.h>
+//#include <linux/page.h>
+//#include <linux/types.h>
+//#include <linux/mm_types.h>
+//#include <linux/jiffies.h>
 
 u64 start_time;
 
@@ -41,7 +41,7 @@ int ptep_test_and_clear_young(struct vm_area_struct *vma, unsigned long addr, pt
 int findPte(struct task_struct *task)
 {
     struct vm_area_struct *vma;
-    unsigned long size, address;
+    unsigned long address;
     pgd_t *pgd;
     p4d_t *p4d;
     pmd_t *pmd;
@@ -56,7 +56,7 @@ int findPte(struct task_struct *task)
             address = vma->vm_start;
             
             int vma_counter = 0, not_accessed = 0, rss_counter = 0, swap_failed = 0, wss_accessed = 0;
-            unsigned long end = vma->vm_end;
+            //unsigned long end = vma->vm_end;
             
             // Loop through each vma
             while( vma->vm_next != NULL ){
@@ -66,7 +66,7 @@ int findPte(struct task_struct *task)
                 // Check each page
                 for( address = vma->vm_start; address <= vma->vm_end; address += PAGE_SIZE ){
                     i++;
-                    pgd = pgd_offset(mm, address);
+                    pgd = pgd_offset(task->mm, address);
                     if( pgd_none(*pgd) || pgd_bad(*pgd) )
                         swap_failed++;
                     
