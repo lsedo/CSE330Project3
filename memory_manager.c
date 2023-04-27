@@ -56,7 +56,7 @@ int findPte(struct task_struct *task)
             mm = task->mm;
             vma = mm->mmap;
             // Loop through each vma
-            while( vma != NULL ){
+            while( vma->vm_next != NULL ){
                 // Check each page
                 for( address = vma->vm_start; address <= vma->vm_end; address += PAGE_SIZE ){
                     pgd = pgd_offset(mm, address);
@@ -80,14 +80,14 @@ int findPte(struct task_struct *task)
                         return 0;
                     pte = *ptep;
                     
-                    if(pte_present(pte))
+                    if(pte_present(pte) == 1)
                         RSS++;
                     else
                         SWAP++;
                 }
                 vma = vma->vm_next;
             }
-            
+            printk("PID %d: RSS=%d KB, SWAP=%d KB, WSS=%d KB", pid, RSS, SWAP, WSS);
         }
     }
     
