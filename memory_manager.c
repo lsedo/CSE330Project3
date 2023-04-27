@@ -25,7 +25,7 @@ static int exit = 0;
 struct task_struct *task;
 
 static int pid = 1;
-unsigned long RSS = 0, SWAP = 0, WSS = 0;
+int RSS = 0, SWAP = 0, WSS = 0;
 
 // Module parameter
 module_param(pid, int, S_IRUSR); 
@@ -40,7 +40,6 @@ int ptep_test_and_clear_young(struct vm_area_struct *vma, unsigned long addr, pt
 
 int findPte(struct task_struct *task)
 {
-    struct mm_struct *mm;
     struct vm_area_struct *vma;
     unsigned long size, address;
     pgd_t *pgd;
@@ -53,44 +52,68 @@ int findPte(struct task_struct *task)
     {
         if (task->pid == pid && task != NULL) 
         {
-            mm = task->mm;
-            vma = mm->mmap;
+            vma = task->mm->mmap;
+            address = vma->vm_start;
+            
+            int vma_counter = 0, not_accessed = 0, rss_counter = 0, swap_failed = 0, wss_accessed = 0;
+            unsigned long end = vma->vm_end;
+            
             // Loop through each vma
             while( vma->vm_next != NULL ){
+            
+                int i = 0; // region counter variable
+                
                 // Check each page
                 for( address = vma->vm_start; address <= vma->vm_end; address += PAGE_SIZE ){
+                    i++;
                     pgd = pgd_offset(mm, address);
                     if( pgd_none(*pgd) || pgd_bad(*pgd) )
-                        return 0;
+                        swap_failed++;
                     
                     p4d = p4d_offset(pgd, address);
                     if( p4d_none(*p4d) || p4d_bad(*p4d) )
-                        return 0;
+                        swap_failed++;
                     
                     pud = pud_offset(p4d, address);
                     if( pud_none(*pud) || pud_bad(*pud) )
-                        return 0;
+                        swap_failed++;
                     
                     pmd = pmd_offset(pud, address);
                     if( pmd_none(*pmd) || pmd_bad(*pmd) )
-                        return 0;
+                        swap_failed++;
                     
                     ptep = pte_offset_map(pmd, address);
                     if( !ptep )
-                        return 0;
+                        swap_failed++;
                     pte = *ptep;
                     
+                    if (ptep_test_and_clear_young(vma, address, ptep) == 1) 
+                    {
+                        wss_accessed++;
+                    }
+                    else 
+                    {
+                        not_accessed++;
+                    }
+                    
                     if(pte_present(pte) == 1)
-                        RSS++;
+                    {
+                        rss_counter++;
+                    }
                     else
-                        SWAP++;
+                    {
+                        swap_failed++;
+                    }
                 }
+                vma_counter++;
                 vma = vma->vm_next;
             }
+            RSS = rss_counter * 4;
+            SWAP = swap_failed * 4;
+            WSS = wss_accessed * 4;
             printk("PID %d: RSS=%d KB, SWAP=%d KB, WSS=%d KB", pid, RSS, SWAP, WSS);
         }
     }
-    
     return 0;
 }
 
